@@ -2,10 +2,7 @@ name: Daily Commit Automation
 
 on:
   schedule:
-    # Runs daily at 9:30 AM UTC
     - cron: '30 9 * * *'
-  
-  # Allow manual trigger for testing
   workflow_dispatch:
 
 jobs:
@@ -13,26 +10,21 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Configure git for 23f1003184@ds.study.iitm.ac.in
+      - name: Setup for 23f1003184@ds.study.iitm.ac.in
         run: |
-          git config user.name "DevSync Bot"
+          git config user.name "github-actions[bot]"
           git config user.email "23f1003184@ds.study.iitm.ac.in"
       
-      - name: Create daily update file
+      - name: Update log file
         run: |
-          # Create or update daily log
           mkdir -p logs
-          echo "Daily update: $(date '+%Y-%m-%d %H:%M:%S UTC')" >> logs/daily-activity.log
-          echo "Workflow run: ${{ github.run_number }}" >> logs/daily-activity.log
-          echo "---" >> logs/daily-activity.log
+          echo "$(date)" >> logs/activity.log
       
-      - name: Commit and push changes
+      - name: Commit changes
         run: |
-          git add .
-          git commit -m "Automated daily update - $(date '+%Y-%m-%d')" || echo "No changes to commit"
+          git add logs/activity.log
+          git diff --staged --quiet || git commit -m "Daily update $(date +%Y-%m-%d) [skip ci]"
           git push
